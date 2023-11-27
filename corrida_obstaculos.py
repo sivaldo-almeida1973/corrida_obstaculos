@@ -41,8 +41,7 @@ class PapaiNoel:
      if self.posy >= 240: #pular
       self.velocidadePersonagem = -11 #para baixo ->positivo, para cima -> negativo
       self.tempoJogo = 0
-
-  
+ 
   def movimento(self):
     self.tempoJogo += 1
     aceleracao = 3
@@ -65,7 +64,6 @@ class PapaiNoel:
         self.posy = 260
         self.noChao = True
   
-
   def desenhar_personagem(self, janela):
     centroImagem = self.imagem.get_rect(topleft=(self.posx, self.posy)).center
     envoltorio = self.imagem.get_rect(center = centroImagem)
@@ -74,8 +72,7 @@ class PapaiNoel:
   def superficiePersonagem(self):
     return pygame.mask.from_surface(self.imagem)
 
-#finalizando primeira classe==============================================
-    
+#finalizando primeira classe==============================================    
 class Obstaculo:
   velocidadeObstaculo = 10
   proxObstaculo = 0
@@ -123,12 +120,82 @@ class Obstaculo:
     self.posx -= self.velocidadeObstaculo
 
 # funcao desenhar obstaculos-------------------------------------------
-  def desenharObstaculo(self, janela):
+  def desenhar_obstaculo(self, janela):
     if self.proxObstaculo == 1:
       janela.blit(self.obstaculoBaixo, (self.posx, self.posicaoObstaculoBaixo))#desenhar janela
     elif self.proxObstaculo == 2:
-      janela.blit(self.obstaculoBaixo, (self.posx, self.posicaoObstaculoAlto))#desenhar janela
+      janela.blit(self.obstaculoCima, (self.posx, self.posicaoObstaculoAlto))#desenhar janela
       
+  def testar_coliao(self):
+    papaiNoelSuperficie = PapaiNoel.superficiePersonagem()
+    ObstaculoBaixoSuperficie = pygame.mask.from_surface(self.obstaculoBaixo)
+    ObstaculoCimaSuperficie = pygame.mask.from_surface(self.obstaculoCima)
+
+    testeColisao = False
+    if self.proxObstaculo == 1:
+      distanciaBaixo = (self.posx - PapaiNoel.posx, self.posicaoObstaculoBaixo - round(PapaiNoel.posy))
+      testeColisao = papaiNoelSuperficie.overlap(ObstaculoBaixoSuperficie, distanciaBaixo)
+
+    if self.proxObstaculo == 2:
+      distanciaCima = (self.posx - PapaiNoel.posx, self.posicaoObstaculoAlto - round(PapaiNoel.posy))
+      testeColisao = papaiNoelSuperficie.overlap(ObstaculoCimaSuperficie, distanciaCima)
+
+    return testeColisao 
+#finalizando classe Obstaculo==========================
+
+# iniciando classe Chão====================
+class Chao:
+  velocidadeChao = 10
+  larguraChao = imagemChao.get_width()
+  imagem = imagemChao
+
+  def __init__(self, posy):
+    self.posy = posy
+    self.posxInicial = 0
+    self.posxFinal = self.larguraChao
+
+  def movimento(self):
+    self.posxInicial -= self.velocidadeChao
+    self.posxFinal -= self.velocidadeChao
+  
+    if self.posxInicial + self.larguraChao < 0:
+      self.posxInicial = self.posxFinal + self.larguraChao
+    if self.posxFinal + self.larguraChao < 0:
+      self.posxFinal = self.posxInicial + self.larguraChao
+        
+  def desenhar_chao(self, janela):
+    janela.blit(self.imagem, (self.posxInicial, self.posy))
+    janela.blit(self.imagem, (self.posxFinal, self.posy))
+
+# final classe Chão====================
+
+#funcao desenhar janela-----------------------
+def desenhar_janela(janela, noel, obstaculos, chao, pontos):
+  janela.blit(imagemFundo, (0, -200))
+  noel.desenhar_personagem(janela) #vem da classe PapaiNoel
+  for obstaculo in obstaculos:
+    obstaculo.desenhar_obstaculo(janela)  #atencao--------------------
+
+  texto = fontePontuacao.render(f'Pontuação: {pontos}', True, (255,255,255))
+  janela.blit(imagemFundoPontos, (larguraJanela - 10 - texto.get_width(), 10))
+  janela.blit(texto, (larguraJanela - 10 - texto.get_width(), 10))
+  chao.desenhar_chao(janela)  #atencao----------------
+  pygame.display.update()
+
+#funcao desenhar janela-----------------------
+
+#funcao Principal----------------------------------
+def main():
+  noel = PapaiNoel(230, 200)
+  chao = Chao(340)
+  obstaculos = [Obstaculo(700)]
+  janela = pygame.display.set_mode((larguraJanela, alturaJanela))
+  pontos = 0
+  relogio = pygame.time.Clock()
+  vivo = True
+
+  
+
 
 
 
